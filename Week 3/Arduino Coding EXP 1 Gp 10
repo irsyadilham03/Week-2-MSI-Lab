@@ -1,1 +1,32 @@
+const int potPin = A0;
+const int ledPin = 7;
 
+String command = "";
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(ledPin, OUTPUT);
+  digitalWrite(ledPin, LOW);
+}
+
+void loop() {
+  int adcValue = analogRead(potPin);
+
+  // Send ADC to Python
+  Serial.println(adcValue);
+
+  // achieve command from Python
+  if (Serial.available() > 0) {
+    command = Serial.readStringUntil('\n');
+    command.trim();
+
+    if (command == "LED ON") {
+      digitalWrite(ledPin, HIGH);
+    }
+    else if (command == "LED OFF") {
+      digitalWrite(ledPin, LOW);
+    }
+  }
+
+  delay(200);
+}
