@@ -1,1 +1,45 @@
+import serial
+import time
+import matplotlib.pyplot as plt
+ser = serial.Serial('COM5', 9600)  
+time.sleep(2)
 
+
+data = []
+
+
+plt.ion()  # interactive mode
+
+
+print("Running... Press CTRL+C to stop")
+
+
+try:
+    while True:
+        if ser.in_waiting:
+            value = ser.readline().decode().strip()
+
+
+            if value.isdigit():
+                angle = int(value)
+                data.append(angle)
+                print("Angle: " + str(angle))
+                if len(data) > 50:
+                    data.pop(0)
+
+
+                # plot graph
+                plt.clf()
+                plt.plot(data)
+                plt.title("Servo Angle (Live)")
+                plt.xlabel("Time")
+                plt.ylabel("Angle (0-180)")
+                plt.pause(0.01)
+
+
+except KeyboardInterrupt:
+    print("Stopped by user")
+
+
+finally:
+    ser.close()
