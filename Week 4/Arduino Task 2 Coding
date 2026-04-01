@@ -1,4 +1,4 @@
-// --- DEFINE YOUR LED PIN HERE ---
+
 const int ledPin = 7 ; // Fill in
 
 void setup() {
