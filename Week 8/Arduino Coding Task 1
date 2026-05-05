@@ -1,0 +1,51 @@
+#include "HUSKYLENS.h"
+#include "SoftwareSerial.h"
+
+HUSKYLENS huskylens;
+SoftwareSerial mySerial(4, 5); // RX, TX
+
+const int ledPin = 13;
+
+void setup() {
+  Serial.begin(115200);
+  mySerial.begin(9600);
+
+  pinMode(ledPin, OUTPUT);
+  digitalWrite(ledPin, LOW);
+
+  while (!huskylens.begin(mySerial)) {
+    Serial.println(F("Begin failed! Check wiring and Protocol Serial 9600"));
+    delay(500);
+  }
+
+  Serial.println("HuskyLens Ready!");
+}
+
+void loop() {
+  bool objectDetected = false;
+
+  if (!huskylens.request()) {
+    digitalWrite(ledPin, LOW);
+    return;
+  }
+
+  while (huskylens.available()) {
+    HUSKYLENSResult result = huskylens.read();
+
+    if (result.command == COMMAND_RETURN_BLOCK) {
+      Serial.print("Object ");
+      Serial.print(result.ID);
+      Serial.println(" detected!");
+
+      if (result.ID == 1) {
+        objectDetected = true;
+      }
+    }
+  }
+
+  if (objectDetected == true) {
+    digitalWrite(ledPin, HIGH);
+  } else {
+    digitalWrite(ledPin, LOW);
+  }
+}
