@@ -1,0 +1,86 @@
+#include "HUSKYLENS.h"
+#include "SoftwareSerial.h"
+
+HUSKYLENS huskylens;
+SoftwareSerial mySerial(4, 5); // RX, TX
+
+const int redPin = 9;
+const int greenPin = 10;
+const int bluePin = 11;
+
+void setup() {
+  Serial.begin(115200);
+  mySerial.begin(9600);
+
+  pinMode(redPin, OUTPUT);
+  pinMode(greenPin, OUTPUT);
+  pinMode(bluePin, OUTPUT);
+
+  setColor(0, 0, 0); // LED OFF
+
+  while (!huskylens.begin(mySerial)) {
+    Serial.println(F("Begin failed! Check wiring and Protocol Serial 9600"));
+    delay(500);
+  }
+
+  Serial.println("HuskyLens Color Recognition Ready!");
+}
+
+void loop() {
+  bool colorDetected = false;
+
+  if (!huskylens.request()) {
+    setColor(0, 0, 0);
+    return;
+  }
+
+  while (huskylens.available()) {
+    HUSKYLENSResult result = huskylens.read();
+
+    if (result.command == COMMAND_RETURN_BLOCK) {
+      colorDetected = true;
+
+      switch (result.ID) {
+        case 1: // Red
+          Serial.println("RED detected");
+          setColor(255, 0, 0);
+          break;
+
+        case 2: // Blue
+          Serial.println("BLUE detected");
+          setColor(0, 0, 255);
+          break;
+
+        case 3: // Green
+          Serial.println("GREEN detected");
+          setColor(0, 255, 0);
+          break;
+
+        case 4: // Yellow
+          Serial.println("YELLOW detected");
+          setColor(255, 255, 0);
+          break;
+
+        case 5: // Purple
+          Serial.println("PURPLE detected");
+          setColor(255, 0, 255);
+          break;
+
+        default:
+          Serial.println("Unknown color detected");
+          setColor(0, 0, 0);
+          break;
+      }
+    }
+  }
+
+  if (colorDetected == false) {
+    setColor(0, 0, 0);
+  }
+}
+
+void setColor(int redValue, int greenValue, int blueValue) {
+  analogWrite(redPin, redValue);
+  analogWrite(greenPin, greenValue);
+  analogWrite(bluePin, blueValue);
+}
